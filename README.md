@@ -18,11 +18,11 @@
 <h1>Credits</h1>
 
 <p>All props are created by bzzz!</p>
-Tebex: https://bzzz.tebex.io/faq
-Discord: https://discord.com/invite/PpAHBCMW97
-Git: https://github.com/Mrs-BzZz
-YouTube: https://www.youtube.com/channel/UC5Q2wNbmrY2zfhkYy4lq9uA
-TikTok: https://www.tiktok.com/@mrs_bzzz
+<p>Tebex: https://bzzz.tebex.io/faq</p>
+<p>Discord: https://discord.com/invite/PpAHBCMW97</p>
+<p>Git: https://github.com/Mrs-BzZz</p>
+<p>YouTube: https://www.youtube.com/channel/UC5Q2wNbmrY2zfhkYy4lq9uA</p>
+<p>TikTok: https://www.tiktok.com/@mrs_bzzz</p>
 
 <h1>Support</h1>
 
