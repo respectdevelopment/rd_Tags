@@ -5,6 +5,12 @@
 ###
 <p>Remove old staff clothing and be modern with admin tag system!</p>
 
+<h1>Requirements</h1>
+
+<p>ESX / QBCORE</p>
+<p>[ox_lib](https://github.com/overextended/ox_lib)</p>
+
+
 <h1>Showcase</h1>
 
 ![image](https://github.com/respectdevelopment/rd_Tags/assets/143709835/71edbcf5-17e4-491e-848c-b6661a6bd202)
