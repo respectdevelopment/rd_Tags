@@ -8,7 +8,7 @@
 <h1>Requirements</h1>
 
 <p>ESX / QBCORE</p>
-<p>[ox_lib](https://github.com/overextended/ox_lib)</p>
+<p>https://github.com/overextended/ox_lib</p>
 
 
 <h1>Showcase</h1>
