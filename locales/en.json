@@ -1,0 +1,17 @@
+{
+    
+    "success": "Success.",
+    "error": "Error.",
+
+    "yourdonthavepermission": "You dont have permission.",
+    "tagon": "You have successfully turned tag on!",
+    "tagoff": "You have successfully turned tag off!",
+    "afkon": "You have successfully turned afk mode on!",
+    "afkoff": "You have successfully turned afk mode off!",
+
+    "admintagontitle": "Admin Turned Tag On",
+    "admintagondescription": "Administrator **%s** has turned tag on!",
+    "admintagofftitle": "Admin Turned Tag Off",
+    "admintagoffdescription": "Administrator **%s** has turned tag off!"
+
+}

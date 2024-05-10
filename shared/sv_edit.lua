@@ -1,0 +1,6 @@
+DiscordWebhook = {
+
+    TurnOnTag = "",
+    TurnOffTag = ""
+
+}
