@@ -7,7 +7,7 @@ Config.Tags = {
 
     Enable = true,
 
-    Type = { -- You can add unlimited new groups, but only with sign ["owner" / "admin" / "staff"]
+    Type = { -- You can add unlimited new groups.
 
         ["owner"] = { -- Group Name
             Sign = "bzzz_player_sign_owner" -- Prop Name (You can add other prop than default.)
