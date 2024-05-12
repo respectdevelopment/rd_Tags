@@ -32,6 +32,8 @@ end)
 
 local ActiveAdmin = {}
 local ActiveAFK = {}
+local PauseMenu = {}
+local DisabledMic = {}
 
 lib.callback.register("rd_Tags:Server:GetPlayerGroup", function(source)
 
