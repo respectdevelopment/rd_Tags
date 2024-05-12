@@ -5,7 +5,7 @@ game 'gta5'
 -- {{ Resource Information }} --
 author 'Respect Development'
 description 'Tag System'
-version '1.0'
+version '1.1'
 
 -- {{ Manifest }} --
 lua54 'yes'
@@ -35,4 +35,4 @@ files {
     'locales/*.json'
 }
 
-data_file 'DLC_ITYP_REQUEST' 'stream/bzzz_player_signs.ytyp'
+--data_file 'DLC_ITYP_REQUEST' 'stream/bzzz_player_signs.ytyp'

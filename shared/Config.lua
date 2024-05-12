@@ -3,6 +3,9 @@ Config = {}
 Config.Framework = "esx" -- ["esx" / "qb"]
 Config.Notification = "esx" -- ["esx" / "qb" / "ox" / "okok" / "rd" / "custom"]
 
+Config.PauseMenu = false
+Config.DisabledMicrophone = false
+
 Config.Tags = {
 
     Enable = true,

@@ -1,6 +1,8 @@
 local Table = {
     AFK = {},
-    TAG = {}
+    TAG = {},
+    PAUSEMENU = {},
+    DISABLEDMIC = {}
 }
 
 lib.locale()
@@ -88,6 +90,106 @@ if Config.Tags.Enable then
     end)
 end
 
+if Config.PauseMenu then
+
+    Citizen.CreateThread(function()
+
+        while true do
+
+            Citizen.Wait(7)
+            local sleep = true
+
+            if IsPauseMenuActive() and next(Table.PAUSEMENU) == nil then
+                
+                lib.requestModel("bzzz_player_sign_pause", 500)
+    
+                local PlayerPed = PlayerPedId()
+                local PlayerCoords = GetEntityCoords(PlayerPed)
+        
+                local prop = CreateObject("bzzz_player_sign_pause", PlayerCoords.x, PlayerCoords.y, PlayerCoords.z + 0.85, true, true, true)
+                SetEntityHeading(prop, PlayerCoords.w)
+                SetEntityRotation(prop, 0.0, 0.0, 0.0, 2, false)
+                FreezeEntityPosition(prop, true)  
+        
+                table.insert(Table.PAUSEMENU, prop)
+                AttachEntityToEntity(prop, PlayerPed, GetPedBoneIndex(PlayerPed, 0x796e), 0.0, 0.0, 0.3, true, true, false, true, 1, true)
+
+                lib.callback.await("rd_Tags:Server:SetActivePauseMenu", source, "set", prop)
+
+            elseif not IsPauseMenuActive() and next(Table.PAUSEMENU) ~= nil then
+
+                for _, k in pairs(Table.PAUSEMENU) do
+                    if k ~= nil then
+                        DeleteEntity(k)
+                        Table.PAUSEMENU = {}
+                    end
+                end
+
+                lib.callback.await("rd_Tags:Server:SetActivePauseMenu", source, "clear")
+                Table.PAUSEMENU = {}
+
+            end
+
+            if sleep then
+                Citizen.Wait(3000)
+            end
+
+        end
+
+    end)
+
+end
+    
+
+if Config.DisabledMicrophone then
+
+    Citizen.CreateThread(function()
+    
+        while true do
+            Citizen.Wait(7)
+            local sleep = true
+
+            if MumbleIsConnected() == false and next(Table.DISABLEDMIC) == nil then
+
+                lib.requestModel("bzzz_player_sign_voice", 500)
+    
+                local PlayerPed = PlayerPedId()
+                local PlayerCoords = GetEntityCoords(PlayerPed)
+        
+                local prop = CreateObject("bzzz_player_sign_voice", PlayerCoords.x, PlayerCoords.y, PlayerCoords.z + 0.85, true, true, true)
+                SetEntityHeading(prop, PlayerCoords.w)
+                SetEntityRotation(prop, 0.0, 0.0, 0.0, 2, false)
+                FreezeEntityPosition(prop, true)  
+        
+                table.insert(Table.DISABLEDMIC, prop)
+                AttachEntityToEntity(prop, PlayerPed, GetPedBoneIndex(PlayerPed, 0x796e), 0.0, 0.0, 0.4, true, true, false, true, 1, true)
+
+                lib.callback.await("rd_Tags:Server:SetDisabledMic", source, "set", prop)
+
+            elseif MumbleIsConnected() == 1 and next(Table.DISABLEDMIC) ~= nil then
+
+                for _, k in pairs(Table.DISABLEDMIC) do
+                    if k ~= nil then
+                        DeleteEntity(k)
+                        Table.DISABLEDMIC = {}
+                    end
+                end
+
+                lib.callback.await("rd_Tags:Server:SetDisabledMic", source, "clear")
+                Table.DISABLEDMIC = {}
+
+            end
+
+            if sleep then
+                Citizen.Wait(3000)
+            end
+
+        end
+
+    end)
+
+end
+    
 RegisterNetEvent("rd_Tags:Client:DeleteEntity", function(prop, action)
 
     if action == "tag" and next(Table.TAG) ~= nil then
@@ -96,8 +198,12 @@ RegisterNetEvent("rd_Tags:Client:DeleteEntity", function(prop, action)
     elseif action == "afk" and next(Table.AFK) ~= nil then
         Table.AFK = {}
         DeleteEntity(prop)
-    else
-        return 
+    elseif action == "disabledmic" and next(Table.DISABLEDMIC) ~= nil then
+        Table.DISABLEDMIC = {}
+        DeleteEntity(prop)
+    elseif action == "pausemenu" and next(Table.PAUSEMENU) ~= nil then
+        Table.PAUSEMENU = {}
+        DeleteEntity(prop)
     end
 
 end)
@@ -119,6 +225,20 @@ AddEventHandler('onResourceStop', function(resourceName)
         if k ~= nil then
             DeleteEntity(k)
             Table.TAG = {}
+        end
+    end
+
+    for _, k in pairs(Table.PAUSEMENU) do
+        if k ~= nil then
+            DeleteEntity(k)
+            Table.PAUSEMENU = {}
+        end
+    end
+
+    for _, k in pairs(Table.DISABLEDMIC) do
+        if k ~= nil then
+            DeleteEntity(k)
+            Table.DISABLEDMIC = {}
         end
     end
 

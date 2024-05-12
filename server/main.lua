@@ -138,6 +138,26 @@ lib.callback.register("rd_Tags:Server:SetActiveAFK", function(source, action, pr
 
 end)
 
+lib.callback.register("rd_Tags:Server:SetActivePauseMenu", function(source, action, prop)
+
+    if action == "set" then
+        PauseMenu[GetPlayerName(source)] = prop
+    elseif action == "clear" then
+        PauseMenu[GetPlayerName(source)] = nil
+    end
+
+end)
+
+lib.callback.register("rd_Tags:Server:SetDisabledMic", function(source, action, prop)
+
+    if action == "set" then
+        DisabledMic[GetPlayerName(source)] = prop
+    elseif action == "clear" then
+        DisabledMic[GetPlayerName(source)] = nil
+    end
+
+end)
+
 AddEventHandler('playerDropped', function (reason)
     
     if ActiveAdmin[GetPlayerName(source)] then
@@ -150,6 +170,18 @@ AddEventHandler('playerDropped', function (reason)
 
         TriggerClientEvent("rd_Tags:Client:DeleteEntity", source, ActiveAFK[GetPlayerName(source)], "afk")
         ActiveAFK[GetPlayerName(source)] = nil
+    end
+
+    if DisabledMic[GetPlayerName(source)] then
+
+        TriggerClientEvent("rd_Tags:Client:DeleteEntity", source, DisabledMic[GetPlayerName(source)], "disabledmic")
+        DisabledMic[GetPlayerName(source)] = nil
+    end
+
+    if PauseMenu[GetPlayerName(source)] then
+
+        TriggerClientEvent("rd_Tags:Client:DeleteEntity", source, PauseMenu[GetPlayerName(source)], "pausemenu")
+        PauseMenu[GetPlayerName(source)] = nil
     end
 
 end)
