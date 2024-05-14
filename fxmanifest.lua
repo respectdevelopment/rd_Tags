@@ -5,7 +5,7 @@ game 'gta5'
 -- {{ Resource Information }} --
 author 'Respect Development'
 description 'Tag System'
-version '1.1'
+version '1.2'
 
 -- {{ Manifest }} --
 lua54 'yes'
@@ -26,6 +26,8 @@ client_scripts {
 
 server_scripts {
 
+    '@oxmysql/lib/MySQL.lua',
+
     'server/main.lua',
     'shared/sv_edit.lua'
 
@@ -35,4 +37,4 @@ files {
     'locales/*.json'
 }
 
---data_file 'DLC_ITYP_REQUEST' 'stream/bzzz_player_signs.ytyp'
+data_file 'DLC_ITYP_REQUEST' 'stream/bzzz_player_signs.ytyp'

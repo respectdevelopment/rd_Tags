@@ -2,11 +2,7 @@ Citizen.CreateThread(function()
     
     lib.locale()
 
-    if Config.Framework == "esx" then
-        ESX = exports["es_extended"]:getSharedObject()
-    elseif Config.Framework == "qb" then
-        QBCore = exports['qb-core']:GetCoreObject()
-    end
+    MySQL.Async.execute("CREATE TABLE IF NOT EXISTS rd_Tags (name TEXT, license TEXT, discord TEXT, tag TEXT)")
 
     PerformHttpRequest("https://raw.githubusercontent.com/respectdevelopment/versions/main/Tags", function(err, text, headers)
 
@@ -35,96 +31,189 @@ local ActiveAFK = {}
 local PauseMenu = {}
 local DisabledMic = {}
 
-lib.callback.register("rd_Tags:Server:GetPlayerGroup", function(source)
+lib.callback.register("rd_Server:GetPlayerIdentifiers", function(source)
 
-    if Config.Framework == "esx" then
+    local license = nil
+    local discord = nil
 
-        local xPlayer = ESX.GetPlayerFromId(source)
 
-        if xPlayer == nil then return end
+    for _, v in pairs(GetPlayerIdentifiers(source))do
 
-        local Group = xPlayer.getGroup()
-
-        return Group
-    elseif Config.Framework == "qb" then
-
-        local xPlayer = QBCore.Functions.GetPlayer(playerId)
-
-        if xPlayer == nil then return end
-
-        local Group = xPlayer.PlayerData.group
-
-        return Group
+        if string.sub(v, 1, string.len("license:")) == "license:" then
+            license = v
+          elseif string.sub(v, 1, string.len("discord:")) == "discord:" then
+            discord = v
+        end
+        
     end
+
+    return {
+        license = license, discord = discord
+    }
+
+end)
+
+lib.callback.register("rd_Tags:Server:DeleteAdministrator", function(source, license)
+
+    local query = MySQL.query.await("DELETE FROM rd_Tags WHERE license = ?", {license})
+
+    return true
+
+end)
+
+lib.callback.register("rd_Tags:Server:ChangeAdminTag", function(source, tag, license)
+
+    local query = MySQL.update("UPDATE rd_Tags SET tag = ? WHERE license = ?", {tag, license})
+
+    return true
+
+
+end)
+
+lib.callback.register("rd_Tags:Server:GetPlayers", function(source)
+
+    local Players = {}
+    local Admins = {}
+
+    local query = MySQL.query.await("SELECT * FROM rd_Tags")
+
+    for _, k in pairs(query) do
+        table.insert(Admins, k.license)
+    end
+
+    for _, k in ipairs(GetPlayers()) do
+
+        local license = nil
+
+        for _, v in pairs(GetPlayerIdentifiers(k))do
+
+            if string.sub(v, 1, string.len("license:")) == "license:" then
+                license = v
+            end
+            
+        end
+
+        if next(Admins) == nil then 
+            table.insert(Players, {name = GetPlayerName(k), id = k, license = license}) 
+        else
+            for _, k in pairs(Admins) do
+                if k ~= license then
+                    table.insert(Players, {name = GetPlayerName(k), id = k, license = license})
+                end
+            end
+        end
+
+    end
+
+    return Players
+
+end)
+
+lib.callback.register("rd_Tags:Server:GetPlayerTag", function(source)
+
+    local license = nil
+
+    for _, v in pairs(GetPlayerIdentifiers(source))do
+
+        if string.sub(v, 1, string.len("license:")) == "license:" then
+            license = v
+        end
+        
+    end
+
+    local query = MySQL.query.await("SELECT * FROM rd_Tags WHERE license = ?", {license})
+
+    if next(query) == nil then return end
+
+    return query
+
+
+
+end)
+
+lib.callback.register("rd_Tags:Server:AddAdministrator", function(source, perms, player, tag, taglabel)
+
+    local license = nil
+    local discord = nil
+
+
+    for _, v in pairs(GetPlayerIdentifiers(source))do
+
+        if string.sub(v, 1, string.len("license:")) == "license:" then
+            license = v
+          elseif string.sub(v, 1, string.len("discord:")) == "discord:" then
+            discord = v
+        end
+        
+    end
+
+    if license == perms.license and discord == perms.discord then
+
+    
+        local query = MySQL.insert.await("INSERT INTO rd_Tags (name, license, discord, tag) VALUES (?, ?, ?, ?)", {
+            GetPlayerName(source),
+            license,
+            discord,
+            tag
+        })
+
+        return GetPlayerName(source)
+
+    else
+
+        DropPlayer(source, "Dont try cheat on this server!")
+        return
+
+    end
+
+end)
+
+lib.callback.register("rd_Tags:Server:GetAdmins", function()
+
+    local query = MySQL.query.await("SELECT * FROM rd_Tags")
+
+    return query
+
 end)
 
 lib.callback.register("rd_Tags:Server:SetActiveAdmin", function(source, action, prop)
 
-    if Config.Framework == "esx" then
+    if action == "set" then
+        ActiveAdmin[GetPlayerName(source)] = prop
 
-        local xPlayer = ESX.GetPlayerFromId(source)
+        if DiscordWebhook.TurnOnTag ~= nil then
 
-        if xPlayer == nil then return end
-
-        if Config.Tags.Type[xPlayer.getGroup()] then
-
-            if action == "set" then
-                ActiveAdmin[GetPlayerName(source)] = prop
-
-                if DiscordWebhook.TurnOnTag ~= nil then
-
-                    local DiscordLog = {
-                        {
-                            ["color"] = 2600155,
-                            ["title"] = locale("admintagontitle"),
-                            ["description"] = locale("admintagondescription", GetPlayerName(source)),
-                            ["footer"] = {
-                                ["text"] = "Respect Development 〢 " ..os.date("%H:%M").. "",
-                                ["icon_url"] = "https://media.discordapp.net/attachments/1236061492432994437/1236064086777794580/Picsart_24-05-04_00-15-07-775-removebg-preview.png?ex=663f37a3&is=663de623&hm=54cfdf0b05571750afb27b0a755363adae5f4d5e18d5d868f651007df0d7064e&=&format=webp&quality=lossless",
-                            },
-                        }
-                    }
-                    PerformHttpRequest(DiscordWebhook.TurnOnTag, function(err, text, headers) end, 'POST', json.encode({ username = "rd_Tags", embeds = DiscordLog, avatar_url = "https://media.discordapp.net/attachments/1236061492432994437/1236064086777794580/Picsart_24-05-04_00-15-07-775-removebg-preview.png?ex=663f37a3&is=663de623&hm=54cfdf0b05571750afb27b0a755363adae5f4d5e18d5d868f651007df0d7064e&=&format=webp&quality=lossless" }), { ['Content-Type'] = 'application/json' })
-                end
-
-            elseif action == "clear" then
-                ActiveAdmin[GetPlayerName(source)] = nil
-
-                if DiscordWebhook.TurnOffTag ~= nil then
-
-                    local DiscordLog = {
-                        {
-                            ["color"] = 2600155,
-                            ["title"] = locale("admintagofftitle"),
-                            ["description"] = locale("admintagoffdescription", GetPlayerName(source)),
-                            ["footer"] = {
-                                ["text"] = "Respect Development 〢 " ..os.date("%H:%M").. "",
-                                ["icon_url"] = "https://media.discordapp.net/attachments/1236061492432994437/1236064086777794580/Picsart_24-05-04_00-15-07-775-removebg-preview.png?ex=663f37a3&is=663de623&hm=54cfdf0b05571750afb27b0a755363adae5f4d5e18d5d868f651007df0d7064e&=&format=webp&quality=lossless",
-                            },
-                        }
-                    }
-                    PerformHttpRequest(DiscordWebhook.TurnOffTag, function(err, text, headers) end, 'POST', json.encode({ username = "rd_Tags", embeds = DiscordLog, avatar_url = "https://media.discordapp.net/attachments/1236061492432994437/1236064086777794580/Picsart_24-05-04_00-15-07-775-removebg-preview.png?ex=663f37a3&is=663de623&hm=54cfdf0b05571750afb27b0a755363adae5f4d5e18d5d868f651007df0d7064e&=&format=webp&quality=lossless" }), { ['Content-Type'] = 'application/json' })
-                end
-            end
-        else
-            DropPlayer(source, "Cheating.")
+            local DiscordLog = {
+                {
+                    ["color"] = 2600155,
+                    ["title"] = locale("admintagontitle"),
+                    ["description"] = locale("admintagondescription", GetPlayerName(source)),
+                    ["footer"] = {
+                        ["text"] = "Respect Development 〢 " ..os.date("%H:%M").. "",
+                        ["icon_url"] = "https://media.discordapp.net/attachments/1236061492432994437/1236064086777794580/Picsart_24-05-04_00-15-07-775-removebg-preview.png?ex=663f37a3&is=663de623&hm=54cfdf0b05571750afb27b0a755363adae5f4d5e18d5d868f651007df0d7064e&=&format=webp&quality=lossless",
+                    },
+                }
+            }
+            PerformHttpRequest(DiscordWebhook.TurnOnTag, function(err, text, headers) end, 'POST', json.encode({ username = "rd_Tags", embeds = DiscordLog, avatar_url = "https://media.discordapp.net/attachments/1236061492432994437/1236064086777794580/Picsart_24-05-04_00-15-07-775-removebg-preview.png?ex=663f37a3&is=663de623&hm=54cfdf0b05571750afb27b0a755363adae5f4d5e18d5d868f651007df0d7064e&=&format=webp&quality=lossless" }), { ['Content-Type'] = 'application/json' })
         end
 
-    elseif Config.Framework == "qb" then
+    elseif action == "clear" then
+        ActiveAdmin[GetPlayerName(source)] = nil
 
-        local xPlayer = QBCore.Functions.GetPlayer(playerId)
+        if DiscordWebhook.TurnOffTag ~= nil then
 
-        if xPlayer == nil then return end
-
-        if Config.Tags.Type[xPlayer.PlayerData.group] then
-
-            if action == "set" then
-                ActiveAdmin[GetPlayerName(source)] = prop
-            elseif action == "clear" then
-                ActiveAdmin[GetPlayerName(source)] = nil
-            end
-        else
-            DropPlayer(source, "Cheating.")
+            local DiscordLog = {
+                {
+                    ["color"] = 2600155,
+                    ["title"] = locale("admintagofftitle"),
+                    ["description"] = locale("admintagoffdescription", GetPlayerName(source)),
+                    ["footer"] = {
+                        ["text"] = "Respect Development 〢 " ..os.date("%H:%M").. "",
+                        ["icon_url"] = "https://media.discordapp.net/attachments/1236061492432994437/1236064086777794580/Picsart_24-05-04_00-15-07-775-removebg-preview.png?ex=663f37a3&is=663de623&hm=54cfdf0b05571750afb27b0a755363adae5f4d5e18d5d868f651007df0d7064e&=&format=webp&quality=lossless",
+                    },
+                }
+            }
+            PerformHttpRequest(DiscordWebhook.TurnOffTag, function(err, text, headers) end, 'POST', json.encode({ username = "rd_Tags", embeds = DiscordLog, avatar_url = "https://media.discordapp.net/attachments/1236061492432994437/1236064086777794580/Picsart_24-05-04_00-15-07-775-removebg-preview.png?ex=663f37a3&is=663de623&hm=54cfdf0b05571750afb27b0a755363adae5f4d5e18d5d868f651007df0d7064e&=&format=webp&quality=lossless" }), { ['Content-Type'] = 'application/json' })
         end
     end
 

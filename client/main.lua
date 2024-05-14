@@ -26,7 +26,7 @@ if Config.AFK.Enable then
             table.insert(Table.AFK, prop)
             AttachEntityToEntity(prop, PlayerPed, GetPedBoneIndex(PlayerPed, 0x796e), 0.0, 0.0, 0.3, true, true, false, true, 1, true)
 
-            Notify(locale("error"), locale("afkon"))
+            Notify(locale("error"), locale("afkon"), "error")
 
             lib.callback.await("rd_Tags:Server:SetActiveAFK", source, "set", prop)
         else
@@ -37,11 +37,231 @@ if Config.AFK.Enable then
 
             Table.AFK = {}
             lib.callback.await("rd_Tags:Server:SetActiveAFK", source, "clear")
-            Notify(locale("error"), locale("afkoff"))
+            Notify(locale("error"), locale("afkoff"), "error")
 
         end
     end)
 end
+
+RegisterCommand(Config.Menu.Command.Name, function()
+
+    local Permission = lib.callback.await("rd_Server:GetPlayerIdentifiers", source)
+
+    if Config.Menu.Permission.DiscordID[Permission.discord] or Config.Menu.Permission.License[Permission.license] then
+
+        Citizen.Wait(250)
+
+        lib.registerContext({
+            id = 'rd_Tags:Main',
+            title = locale("tagsettings"),
+            options = {
+                
+                {
+                    title = locale("administrators"),
+                    description = locale("clickforviewadministrators"),
+                    icon = "fas fa-list",
+
+                    onSelect = function()
+
+                        local Options = {}
+
+                        local cb = lib.callback.await("rd_Tags:Server:GetAdmins", source)
+
+                        if next(cb) == nil then
+                            Notify(locale("error"), locale("anyadmin"), "error")
+                            return
+                        end
+                
+                        for _, k in pairs(cb) do
+                
+                            local options = {
+                                title = k.name,
+                                description = locale("clicktoeditadmin"),
+                                icon = "fas fa-user",
+                
+                                metadata = {
+                                    {label = locale("tag"), value = k.tag},                
+                                },
+
+                                onSelect = function()
+
+                                    lib.registerContext({
+                                        id = k.name,
+                                        menu = "rd_Tags:Main",
+                                        title = locale("tagsettings"),
+                                        options = {
+
+                                            {
+                                                title = locale("edittag"),
+                                                description = locale("clicktoefittag"),
+                                                icon = "fas fa-pen",
+
+                                                onSelect = function()
+
+                                                    local Options = {}
+                                                    local Tags = {}
+
+                                                    for tag in pairs(Config.Tags.Type) do
+
+                                                        if tag ~= k.tag then
+                                                            table.insert(Tags, tag)
+                                                        end 
+
+                                                    end
+
+                                                    for _, v in pairs(Tags) do
+                                                        
+                                                        local option = {
+                                                            title = v,
+                                                            description = locale("clicktoselectthistag"),
+                                                            icon = "fas fa-shield",
+
+                                                            onSelect = function()
+
+                                                                local alert = lib.alertDialog({
+                                                                    header = locale("edittag"),
+                                                                    content = locale("confirmedit", k.name),
+                                                                    centered = true,
+                                                                    cancel = true
+                                                                })
+
+                                                                if alert == "confirm" then
+
+                                                                    local cb = lib.callback.await("rd_Tags:Server:ChangeAdminTag", source, v, k.license)
+
+                                                                    if cb then
+                                                                        Notify(locale("success"), locale("changedtag", k.name), "success")
+                                                                    end
+                                                                else
+                                                                    Notify(locale("success"), locale("canceledit", k.name), "success")
+                                                                end
+
+                                                            end
+                                                        }
+
+                                                        table.insert(Options, option)
+
+                                                    end
+
+                                                    lib.registerContext({
+                                                        id = 'rd_Tags:TagList',
+                                                        menu = k.name,
+                                                        title = locale("tagsettings"),
+                                                        options = Options 
+                                                    })
+                                                     
+                                                    lib.showContext('rd_Tags:TagList')
+
+                                                end
+
+
+                                            },
+                                            {
+                                                title = locale("deleteadministrator"),
+                                                description = locale("clicktodelete"),
+                                                icon = "fas fa-trash",
+
+                                                onSelect = function()
+
+                                                    local alert = lib.alertDialog({
+                                                        header = locale("deleteadministrator"),
+                                                        content = locale("configmrdelete", k.name),
+                                                        centered = true,
+                                                        cancel = true
+                                                    })
+
+                                                    if alert == "confirm" then
+                                                        local cb = lib.callback.await("rd_Tags:Server:DeleteAdministrator", source, k.license)
+
+                                                        if cb then
+                                                            Notify(locale("success"), locale("deletetedadmin", k.name), "success")
+                                                        end
+                                                    else
+                                                        Notify(locale("success"), locale("canceldeleteadmin", k.name), "success")
+                                                    end
+
+                                                end
+                                            }
+
+                                        } 
+                                    })
+                                     
+                                    lib.showContext(k.name)
+
+                                end
+                            }
+                
+                            table.insert(Options, options)
+                
+                        end
+                
+                        lib.registerContext({
+                            id = 'rd_Tags:AdminList',
+                            menu = "rd_Tags:Main",
+                            title = locale("tagsettings"),
+                            options = Options 
+                        })
+                         
+                        lib.showContext('rd_Tags:AdminList')
+
+                    end
+                },
+
+                {
+                    title = locale("addnewadministrator"),
+                    description = locale("clickforaddnewadministrator"),
+                    icon = "fas fa-user-plus",
+
+                    onSelect = function()
+
+                        if Config.Menu.Permission.DiscordID[Permission.discord] or Config.Menu.Permission.License[Permission.license] then
+
+                            local Options = {}
+                            local Options2 = {}
+
+                            local cb = lib.callback.await("rd_Tags:Server:GetPlayers", source)
+
+                            for _, k in pairs(cb) do
+                                Options[#Options + 1] = {label = k.name.." | ID: "..k.id, value = k.id}
+                            end
+
+                            for k, v in pairs(Config.Tags.Type) do
+                                Options2[#Options2 + 1] = {label = k, value = k}
+                            end
+
+                            if next(Options) then
+
+                                local input = lib.inputDialog(locale("give_vehicle"), {
+                                    {type = 'select', label = locale('chooseplayer'), required = true, searchable = true, options = Options},
+                                    {type = 'select', label = locale('choosetag'), required = true, searchable = true, options = Options2},
+                                })
+
+                                if input then
+
+                                    local cb = lib.callback.await("rd_Tags:Server:AddAdministrator", source, Permission, input[1], input[2])
+
+                                    if cb then
+                                        Notify(locale("success"), locale("addednewaming", input[2], cb), "success")
+                                    end
+
+                                end
+
+                            else
+                                
+                                Notify(locale("error"), locale("anyactiveplayer"), "error")
+
+                            end
+
+                        end
+                    end
+                },
+            } 
+        })
+
+        lib.showContext("rd_Tags:Main")
+
+    end
+end)
 
 if Config.Tags.Enable then
 
@@ -49,20 +269,20 @@ if Config.Tags.Enable then
 
     RegisterCommand(Config.Tags.Command.Name, function()
         
-        local cb = lib.callback.await("rd_Tags:Server:GetPlayerGroup")
+        local cb = lib.callback.await("rd_Tags:Server:GetPlayerTag", source)
 
-        if Config.Tags.Type[cb] then
+        if Config.Tags.Type[cb[1].tag] then
             
             Citizen.Wait(250)
 
             if next(Table.TAG) == nil then
 
-                lib.requestModel(Config.Tags.Type[cb].Sign, 500)
+                lib.requestModel(Config.Tags.Type[cb[1].tag].Sign, 500)
     
                 local PlayerPed = PlayerPedId()
                 local PlayerCoords = GetEntityCoords(PlayerPed)
         
-                local prop = CreateObject(Config.Tags.Type[cb].Sign, PlayerCoords.x, PlayerCoords.y, PlayerCoords.z + 0.85, true, true, true)
+                local prop = CreateObject(Config.Tags.Type[cb[1].tag].Sign, PlayerCoords.x, PlayerCoords.y, PlayerCoords.z + 0.85, true, true, true)
                 SetEntityHeading(prop, PlayerCoords.w)
                 SetEntityRotation(prop, 0.0, 0.0, 0.0, 2, false)
                 FreezeEntityPosition(prop, true)  
@@ -70,7 +290,7 @@ if Config.Tags.Enable then
                 table.insert(Table.TAG, prop)
                 AttachEntityToEntity(prop, PlayerPed, GetPedBoneIndex(PlayerPed, 0x796e), 0.0, 0.0, 0.3, true, true, false, true, 1, true)
 
-                Notify(locale("error"), locale("tagon"))
+                Notify(locale("error"), locale("tagon"), "error")
 
                 lib.callback.await("rd_Tags:Server:SetActiveAdmin", source, "set", prop)
             else
@@ -81,7 +301,7 @@ if Config.Tags.Enable then
 
                 Table.TAG = {}
                 lib.callback.await("rd_Tags:Server:SetActiveAdmin", source, "clear")
-                Notify(locale("error"), locale("tagoff"))
+                Notify(locale("error"), locale("tagoff"), "error")
         
             end
 

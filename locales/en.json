@@ -8,10 +8,34 @@
     "tagoff": "You have successfully turned tag off!",
     "afkon": "You have successfully turned afk mode on!",
     "afkoff": "You have successfully turned afk mode off!",
+    "anyactiveplayer": "There is no active player.",
+    "anyadmin": "There is no admin with tag.",
+    "deletetedadmin": "You successfully deleted %s's tag!",
+    "canceldeleteadmin": "You successfully canceled delete %s's tag!",
+    "changedtag": "You successfully changed %s's tag!",
+    "canceledit": "You successfully canceled edit %s's tag!",
+    "addednewaming": "You successfully added tag %s for %s.",
 
     "admintagontitle": "Admin Turned Tag On",
     "admintagondescription": "Administrator **%s** has turned tag on!",
     "admintagofftitle": "Admin Turned Tag Off",
-    "admintagoffdescription": "Administrator **%s** has turned tag off!"
+    "admintagoffdescription": "Administrator **%s** has turned tag off!",
+
+    "tagsettings": "Tag Settings",
+    "administrators": "List of Administrators",
+    "clickforviewadministrators": "Click for view list of administrators.",
+    "addnewadministrator": "Add new Administrator",
+    "clickforaddnewadministrator": "Click for add new administrator",
+    "clicktoeditadmin": "Click to edit administrator.",
+    "tag": "Tag",
+    "chooseplayer": "Choose Player",
+    "choosetag": "Choose Tag",
+    "edittag": "Edit Tag Type",
+    "confirmedit": "Are you sure about change %s's tag?",
+    "clicktoefittag": "Click to edit tag type.",
+    "deleteadministrator": "Delete Administrator",
+    "clicktodelete": "Click to delete this administrator.",
+    "configmrdelete": "Are you sure about delete %s's tag?",
+    "clicktoselectthistag": "Click for select this tag."
 
 }
