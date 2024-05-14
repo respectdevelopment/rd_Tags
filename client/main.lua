@@ -271,6 +271,11 @@ if Config.Tags.Enable then
         
         local cb = lib.callback.await("rd_Tags:Server:GetPlayerTag", source)
 
+        if next(cb) == nil then
+            Notify(locale("error"), locale("yourdonthavepermission"), "error")
+            return
+        end
+
         if Config.Tags.Type[cb[1].tag] then
             
             Citizen.Wait(250)
