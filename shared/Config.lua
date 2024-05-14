@@ -11,10 +11,10 @@ Config.Menu = {
 
         DiscordID = {
 
+            ["license:624614621273128990"] = true,
 
             -- You can add unlimited more permission
             -- ["discord:624614621273128990"] = true
-
         },
 
         License = {
@@ -22,10 +22,8 @@ Config.Menu = {
             ["license:aa234d7a8512d560594b0e85d70c6f216b8dffb4"] = true,
 
             -- You can add unlimited more permission
-            -- ["license:code"] = true
-
+            -- ["license:aa234d7a8512d560594b0e85d70c6f216b8dffb4"] = true
         }
-
     },
 
     Command = {
@@ -34,7 +32,7 @@ Config.Menu = {
         Description = "Open tag-settings menu. (Admin-Only)"
 
     },
-
+    
 }
 
 Config.Tags = {
