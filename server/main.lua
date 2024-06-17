@@ -2,7 +2,7 @@ Citizen.CreateThread(function()
     
     lib.locale()
 
-    MySQL.Async.execute("CREATE TABLE IF NOT EXISTS rd_Tags (name TEXT, license TEXT, discord TEXT, tag TEXT)")
+    MySQL.Async.execute("CREATE TABLE IF NOT EXISTS rd_Tags (name TEXT, license TEXT, tag TEXT)")
 
     PerformHttpRequest("https://raw.githubusercontent.com/respectdevelopment/versions/main/Tags", function(err, text, headers)
 
@@ -31,40 +31,27 @@ local ActiveAFK = {}
 local PauseMenu = {}
 local DisabledMic = {}
 
-lib.callback.register("rd_Server:GetPlayerIdentifiers", function(source)
+lib.callback.register("rd_Tags:Server:GetPlayerIdentifier", function(source)
 
-    local license = nil
-    local discord = nil
-
-
-    for _, v in pairs(GetPlayerIdentifiers(source))do
-
-        if string.sub(v, 1, string.len("license:")) == "license:" then
-            license = v
-          elseif string.sub(v, 1, string.len("discord:")) == "discord:" then
-            discord = v
-        end
-        
-    end
-
-    return {
-        license = license, discord = discord
-    }
+    if not Config.Menu.Permission[GetPlayerIdentifier(source, 0)] then return end
+    return GetPlayerIdentifier(source, 0)
 
 end)
 
 lib.callback.register("rd_Tags:Server:DeleteAdministrator", function(source, license)
 
-    local query = MySQL.query.await("DELETE FROM rd_Tags WHERE license = ?", {license})
+    if not Config.Menu.Permission[GetPlayerIdentifier(source, 0)] then return end
 
+    local query = MySQL.query.await("DELETE FROM rd_Tags WHERE license = ?", {license})
     return true
 
 end)
 
 lib.callback.register("rd_Tags:Server:ChangeAdminTag", function(source, tag, license)
 
-    local query = MySQL.update("UPDATE rd_Tags SET tag = ? WHERE license = ?", {tag, license})
+    if not Config.Menu.Permission[GetPlayerIdentifier(source, 0)] then return end
 
+    local query = MySQL.update("UPDATE rd_Tags SET tag = ? WHERE license = ?", {tag, license})
     return true
 
 
@@ -72,35 +59,20 @@ end)
 
 lib.callback.register("rd_Tags:Server:GetPlayers", function(source)
 
+    if not Config.Menu.Permission[GetPlayerIdentifier(source, 0)] then return end
+
+    local Query = MySQL.query.await("SELECT license FROM rd_Tags")
     local Players = {}
-    local Admins = {}
 
-    local query = MySQL.query.await("SELECT * FROM rd_Tags")
+    for _, k in pairs (GetActivePlayers()) do
 
-    for _, k in pairs(query) do
-        table.insert(Admins, k.license)
-    end
+        if not Query[GetPlayerIdentifier(k, 0)] then
 
-    for _, k in ipairs(GetPlayers()) do
+            Players[#Players+1] = {
+                name = GetPlayerName(k),
+                id = k
+            }
 
-        local license = nil
-
-        for _, v in pairs(GetPlayerIdentifiers(k))do
-
-            if string.sub(v, 1, string.len("license:")) == "license:" then
-                license = v
-            end
-            
-        end
-
-        if next(Admins) == nil then 
-            table.insert(Players, {name = GetPlayerName(k), id = k, license = license}) 
-        else
-            for _, k in pairs(Admins) do
-                if k ~= license then
-                    table.insert(Players, {name = GetPlayerName(k), id = k, license = license})
-                end
-            end
         end
 
     end
@@ -111,72 +83,37 @@ end)
 
 lib.callback.register("rd_Tags:Server:GetPlayerTag", function(source)
 
-    local license = nil
-
-    for _, v in pairs(GetPlayerIdentifiers(source))do
-
-        if string.sub(v, 1, string.len("license:")) == "license:" then
-            license = v
-        end
-        
-    end
-
-    local query = MySQL.query.await("SELECT * FROM rd_Tags WHERE license = ?", {license})
-
-    if next(query) == nil then return end
-
+    local query = MySQL.query.await("SELECT * FROM rd_Tags WHERE license = ?", {GetPlayerIdentifier(source, 0)})
     return query
-
-
 
 end)
 
-lib.callback.register("rd_Tags:Server:AddAdministrator", function(source, perms, player, tag, taglabel)
+lib.callback.register("rd_Tags:Server:AddAdministrator", function(source, player, tag)
 
-    local license = nil
-    local discord = nil
+    if not Config.Menu.Permission[GetPlayerIdentifier(source, 0)] then return end
 
+    local query = MySQL.insert.await("INSERT INTO rd_Tags (name, license, tag) VALUES (?, ?, ?)", {
+        GetPlayerName(player),
+        GetPlayerIdentifier(player, 0),
+        tag
+    })
 
-    for _, v in pairs(GetPlayerIdentifiers(source))do
-
-        if string.sub(v, 1, string.len("license:")) == "license:" then
-            license = v
-          elseif string.sub(v, 1, string.len("discord:")) == "discord:" then
-            discord = v
-        end
-        
-    end
-
-    if license == perms.license and discord == perms.discord then
-
-    
-        local query = MySQL.insert.await("INSERT INTO rd_Tags (name, license, discord, tag) VALUES (?, ?, ?, ?)", {
-            GetPlayerName(source),
-            license,
-            discord,
-            tag
-        })
-
-        return GetPlayerName(source)
-
-    else
-
-        DropPlayer(source, "Dont try cheat on this server!")
-        return
-
-    end
+    return GetPlayerName(source)
 
 end)
 
 lib.callback.register("rd_Tags:Server:GetAdmins", function()
 
-    local query = MySQL.query.await("SELECT * FROM rd_Tags")
+    if not Config.Menu.Permission[GetPlayerIdentifier(source, 0)] then return end
 
+    local query = MySQL.query.await("SELECT * FROM rd_Tags")
     return query
 
 end)
 
 lib.callback.register("rd_Tags:Server:SetActiveAdmin", function(source, action, prop)
+
+    if not Config.Menu.Permission[GetPlayerIdentifier(source, 0)] then return end
 
     if action == "set" then
         ActiveAdmin[GetPlayerName(source)] = prop

@@ -5,7 +5,7 @@ game 'gta5'
 -- {{ Resource Information }} --
 author 'Respect Development'
 description 'Tag System'
-version '1.2'
+version '1.3'
 
 -- {{ Manifest }} --
 lua54 'yes'
@@ -13,7 +13,7 @@ lua54 'yes'
 shared_scripts {
 
     '@ox_lib/init.lua',
-    'shared/Config.lua'
+    'shared/config.lua'
 
 }
 

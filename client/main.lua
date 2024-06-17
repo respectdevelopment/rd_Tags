@@ -45,11 +45,9 @@ end
 
 RegisterCommand(Config.Menu.Command.Name, function()
 
-    local Permission = lib.callback.await("rd_Server:GetPlayerIdentifiers", source)
+    local Permission = lib.callback.await("rd_Tags:Server:GetPlayerIdentifier", source)
 
-    if Config.Menu.Permission.DiscordID[Permission.discord] or Config.Menu.Permission.License[Permission.license] then
-
-        Citizen.Wait(250)
+    if Config.Menu.Permission[Permission] then
 
         lib.registerContext({
             id = 'rd_Tags:Main',
@@ -214,31 +212,34 @@ RegisterCommand(Config.Menu.Command.Name, function()
 
                     onSelect = function()
 
-                        if Config.Menu.Permission.DiscordID[Permission.discord] or Config.Menu.Permission.License[Permission.license] then
+                        if Config.Menu.Permission[Permission] then
 
-                            local Options = {}
-                            local Options2 = {}
+                            local Players = {}
+                            local Tags = {}
 
                             local cb = lib.callback.await("rd_Tags:Server:GetPlayers", source)
 
                             for _, k in pairs(cb) do
-                                Options[#Options + 1] = {label = k.name.." | ID: "..k.id, value = k.id}
+                                Players[#Players+1] = {label = k.name.." | ID: "..k.id, value = k.id}
                             end
 
                             for k, v in pairs(Config.Tags.Type) do
-                                Options2[#Options2 + 1] = {label = k, value = k}
+                                Tags[#Tags+1] = {label = k, value = k}
                             end
 
-                            if next(Options) then
+                            if next(Players) then
+
+                                print(json.encode(Players))
+                                print(json.encode(Tags))
 
                                 local input = lib.inputDialog(locale("give_vehicle"), {
-                                    {type = 'select', label = locale('chooseplayer'), required = true, searchable = true, options = Options},
-                                    {type = 'select', label = locale('choosetag'), required = true, searchable = true, options = Options2},
+                                    {type = 'select', label = locale('chooseplayer'), required = true, searchable = true, options = Players},
+                                    {type = 'select', label = locale('choosetag'), required = true, searchable = true, options = Tags},
                                 })
 
                                 if input then
 
-                                    local cb = lib.callback.await("rd_Tags:Server:AddAdministrator", source, Permission, input[1], input[2])
+                                    local cb = lib.callback.await("rd_Tags:Server:AddAdministrator", source, input[1], input[2])
 
                                     if cb then
                                         Notify(locale("success"), locale("addednewaming", input[2], cb), "success")
@@ -259,6 +260,10 @@ RegisterCommand(Config.Menu.Command.Name, function()
         })
 
         lib.showContext("rd_Tags:Main")
+
+    else
+
+        Notify(locale("error"), locale("yourdonthavepermission"), "error")
 
     end
 end)
@@ -295,7 +300,7 @@ if Config.Tags.Enable then
                 table.insert(Table.TAG, prop)
                 AttachEntityToEntity(prop, PlayerPed, GetPedBoneIndex(PlayerPed, 0x796e), 0.0, 0.0, 0.3, true, true, false, true, 1, true)
 
-                Notify(locale("error"), locale("tagon"), "error")
+                Notify(locale("success"), locale("tagon"), "success")
 
                 lib.callback.await("rd_Tags:Server:SetActiveAdmin", source, "set", prop)
             else

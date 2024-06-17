@@ -1,7 +1,5 @@
 Config = {}
 
-Config.Notification = "esx" -- ["esx" / "qb" / "ox" / "okok" / "rd" / "custom"]
-
 Config.PauseMenu = false
 Config.DisabledMicrophone = false
 
@@ -9,21 +7,9 @@ Config.Menu = {
 
     Permission = {
 
-        DiscordID = {
+        ["license:aa234d7a8512d560594b0e85d70c6f216b8dffb4"] = true,
+        -- ["license:xxxxx"] = true
 
-            ["license:624614621273128990"] = true,
-
-            -- You can add unlimited more permission
-            -- ["discord:624614621273128990"] = true
-        },
-
-        License = {
-
-            ["license:aa234d7a8512d560594b0e85d70c6f216b8dffb4"] = true,
-
-            -- You can add unlimited more permission
-            -- ["license:aa234d7a8512d560594b0e85d70c6f216b8dffb4"] = true
-        }
     },
 
     Command = {
