@@ -33,14 +33,14 @@ local DisabledMic = {}
 
 lib.callback.register("rd_Tags:Server:GetPlayerIdentifier", function(source)
 
-    if not Config.Menu.Permission[GetPlayerIdentifier(source, 0)] then return end
-    return GetPlayerIdentifier(source, 0)
+    if not Config.Menu.Permission[GetPlayerLicense(source)] then return end
+    return GetPlayerLicense(source)
 
 end)
 
 lib.callback.register("rd_Tags:Server:DeleteAdministrator", function(source, license)
 
-    if not Config.Menu.Permission[GetPlayerIdentifier(source, 0)] then return end
+    if not Config.Menu.Permission[GetPlayerLicense(source)] then return end
 
     local query = MySQL.query.await("DELETE FROM rd_Tags WHERE license = ?", {license})
     return true
@@ -49,7 +49,7 @@ end)
 
 lib.callback.register("rd_Tags:Server:ChangeAdminTag", function(source, tag, license)
 
-    if not Config.Menu.Permission[GetPlayerIdentifier(source, 0)] then return end
+    if not Config.Menu.Permission[GetPlayerLicense(source)] then return end
 
     local query = MySQL.update("UPDATE rd_Tags SET tag = ? WHERE license = ?", {tag, license})
     return true
@@ -59,7 +59,7 @@ end)
 
 lib.callback.register("rd_Tags:Server:GetPlayers", function(source)
 
-    if not Config.Menu.Permission[GetPlayerIdentifier(source, 0)] then return end
+    if not Config.Menu.Permission[GetPlayerLicense(source)] then return end
 
     local Query = MySQL.query.await("SELECT license FROM rd_Tags")
     local Players = {}
@@ -83,14 +83,14 @@ end)
 
 lib.callback.register("rd_Tags:Server:GetPlayerTag", function(source)
 
-    local query = MySQL.query.await("SELECT * FROM rd_Tags WHERE license = ?", {GetPlayerIdentifier(source, 0)})
+    local query = MySQL.query.await("SELECT * FROM rd_Tags WHERE license = ?", {GetPlayerLicense(source)})
     return query
 
 end)
 
 lib.callback.register("rd_Tags:Server:AddAdministrator", function(source, player, tag)
 
-    if not Config.Menu.Permission[GetPlayerIdentifier(source, 0)] then return end
+    if not Config.Menu.Permission[GetPlayerLicense(source)] then return end
 
     local query = MySQL.insert.await("INSERT INTO rd_Tags (name, license, tag) VALUES (?, ?, ?)", {
         GetPlayerName(player),
@@ -104,7 +104,7 @@ end)
 
 lib.callback.register("rd_Tags:Server:GetAdmins", function()
 
-    if not Config.Menu.Permission[GetPlayerIdentifier(source, 0)] then return end
+    if not Config.Menu.Permission[GetPlayerLicense(source)] then return end
 
     local query = MySQL.query.await("SELECT * FROM rd_Tags")
     return query
@@ -113,7 +113,7 @@ end)
 
 lib.callback.register("rd_Tags:Server:SetActiveAdmin", function(source, action, prop)
 
-    if not Config.Menu.Permission[GetPlayerIdentifier(source, 0)] then return end
+    if not Config.Menu.Permission[GetPlayerLicense(source)] then return end
 
     if action == "set" then
         ActiveAdmin[GetPlayerName(source)] = prop
@@ -214,5 +214,16 @@ AddEventHandler('playerDropped', function (reason)
 
 end)
 
+function GetPlayerLicense(id)
 
+    local identifiers = GetPlayerIdentifiers(id)
 
+    for _, identifier in ipairs(identifiers) do
+        if string.find(identifier, "license" .. ":") then
+            return identifier
+        end
+    end
+
+    return nil
+
+end
