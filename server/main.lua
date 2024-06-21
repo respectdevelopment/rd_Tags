@@ -94,7 +94,7 @@ lib.callback.register("rd_Tags:Server:AddAdministrator", function(source, player
 
     local query = MySQL.insert.await("INSERT INTO rd_Tags (name, license, tag) VALUES (?, ?, ?)", {
         GetPlayerName(player),
-        GetPlayerIdentifier(player, 0),
+        GetPlayerLicense(source),
         tag
     })
 
