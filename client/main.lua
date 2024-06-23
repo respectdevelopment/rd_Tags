@@ -229,9 +229,6 @@ RegisterCommand(Config.Menu.Command.Name, function()
 
                             if next(Players) then
 
-                                print(json.encode(Players))
-                                print(json.encode(Tags))
-
                                 local input = lib.inputDialog(locale("give_vehicle"), {
                                     {type = 'select', label = locale('chooseplayer'), required = true, searchable = true, options = Players},
                                     {type = 'select', label = locale('choosetag'), required = true, searchable = true, options = Tags},
